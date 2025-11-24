@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Interaktif dengan Perhitungan Berantai</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            max-width: 400px;
+            width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .calculator-header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 15px 20px;
+        }
+        
+        .calculator-display {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .expression {
+            width: 100%;
+            min-height: 30px;
+            text-align: right;
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+        
+        .display {
+            width: 100%;
+            height: 60px;
+            background-color: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: right;
+            font-size: 2.2rem;
+            font-weight: 300;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .calculator-body {
+            padding: 20px;
+        }
+        
+        .memory-functions {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .memory-btn {
+            padding: 8px 5px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .calculator-btn {
+            padding: 15px 10px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .calculator-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator-btn:active {
+            transform: translateY(0);
+        }
+        
+        .number {
+            background-color: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+        }
+        
+        .operator {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .operator.active {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .equals {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .clear {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .history-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .history-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 480px) {
+            .calculator-btn {
+                padding: 12px 8px;
+                font-size: 1.1rem;
+            }
+            
+            .display {
+                height: 50px;
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header text-center">
+            <h1 class="h4 mb-0">Kalkulator</h1>
+        </div>
+        
+        <div class="calculator-display">
+            <div class="expression" id="expression"></div>
+            <div class="display" id="display">0</div>
+        </div>
+        
+        <div class="calculator-body">
+            <div class="memory-functions">
+                <button class="btn btn-outline-secondary memory-btn" id="mc">MC</button>
+                <button class="btn btn-outline-secondary memory-btn" id="mr">MR</button>
+                <button class="btn btn-outline-secondary memory-btn" id="m-plus">M+</button>
+                <button class="btn btn-outline-secondary memory-btn" id="m-minus">M-</button>
+                <button class="btn btn-outline-secondary memory-btn" id="m-clear">MC</button>
+            </div>
+            
+            <div class="calculator-grid">
+                <button class="calculator-btn clear" id="clear">C</button>
+                <button class="calculator-btn clear" id="clear-entry">CE</button>
+                <button class="calculator-btn operator" id="divide">÷</button>
+                <button class="calculator-btn operator" id="multiply">×</button>
+                
+                <button class="calculator-btn number" id="seven">7</button>
+                <button class="calculator-btn number" id="eight">8</button>
+                <button class="calculator-btn number" id="nine">9</button>
+                <button class="calculator-btn operator" id="subtract">-</button>
+                
+                <button class="calculator-btn number" id="four">4</button>
+                <button class="calculator-btn number" id="five">5</button>
+                <button class="calculator-btn number" id="six">6</button>
+                <button class="calculator-btn operator" id="add">+</button>
+                
+                <button class="calculator-btn number" id="one">1</button>
+                <button class="calculator-btn number" id="two">2</button>
+                <button class="calculator-btn number" id="three">3</button>
+                <button class="calculator-btn equals" id="equals">=</button>
+                
+                <button class="calculator-btn number" id="zero">0</button>
+                <button class="calculator-btn number" id="decimal">.</button>
+            </div>
+            
+            <div class="history-section">
+                <h3 class="h6 mb-2">Riwayat Perhitungan</h3>
+                <div class="history-list" id="history-list">
+                    <!-- History items will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // State variables
+        let displayValue = '0';
+        let currentExpression = '';
+        let firstOperand = null;
+        let operator = null;
+        let waitingForSecondOperand = false;
+        let memory = 0;
+        let calculationHistory = [];
+        let lastOperator = null;
+
+        // DOM Elements
+        const display = document.getElementById('display');
+        const expressionDisplay = document.getElementById('expression');
+        const historyList = document.getElementById('history-list');
+
+        // Update display
+        function updateDisplay() {
+            display.textContent = displayValue;
+            expressionDisplay.textContent = currentExpression;
+        }
+
+        // Input digit
+        function inputDigit(digit) {
+            if (waitingForSecondOperand) {
+                displayValue = digit;
+                waitingForSecondOperand = false;
+                currentExpression += ' ' + displayValue;
+            } else {
+                displayValue = displayValue === '0' ? digit : displayValue + digit;
+                if (currentExpression === '' || /[+\-×÷=]/.test(currentExpression.slice(-1))) {
+                    currentExpression = displayValue;
+                } else {
+                    currentExpression = currentExpression.slice(0, -displayValue.length + 1) + displayValue;
+                }
+            }
+            updateDisplay();
+        }
+
+        // Input decimal
+        function inputDecimal() {
+            if (waitingForSecondOperand) {
+                displayValue = '0.';
+                waitingForSecondOperand = false;
+                currentExpression += ' ' + displayValue;
+                updateDisplay();
+                return;
+            }
+            
+            if (!displayValue.includes('.')) {
+                displayValue += '.';
+                currentExpression = currentExpression.slice(0, -displayValue.length + 1) + displayValue;
+                updateDisplay();
+            }
+        }
+
+        // Handle operator dengan urutan operasi
+        function handleOperator(nextOperator) {
+            const inputValue = parseFloat(displayValue);
+            
+            // Reset operator active state
+            document.querySelectorAll('.operator').forEach(op => {
+                op.classList.remove('active');
+            });
+            
+            // Set active state for current operator
+            document.getElementById(
+                nextOperator === '+' ? 'add' :
+                nextOperator === '-' ? 'subtract' :
+                nextOperator === '×' ? 'multiply' : 'divide'
+            ).classList.add('active');
+            
+            if (operator && waitingForSecondOperand) {
+                operator = nextOperator;
+                currentExpression = currentExpression.slice(0, -1) + nextOperator;
+                updateDisplay();
+                return;
+            }
+            
+            if (firstOperand === null) {
+                firstOperand = inputValue;
+            } else if (operator) {
+                // Evaluasi ekspresi saat ini sebelum menambahkan operator baru
+                const result = evaluateExpression();
+                displayValue = `${parseFloat(result.toFixed(7))}`;
+                firstOperand = parseFloat(displayValue);
+            }
+            
+            operator = nextOperator;
+            waitingForSecondOperand = true;
+            
+            // Update expression display
+            if (currentExpression === '' || currentExpression === displayValue) {
+                currentExpression = displayValue + ' ' + operator;
+            } else {
+                // Jika sudah ada operator sebelumnya, ganti dengan yang baru
+                if (/[+\-×÷]/.test(currentExpression.slice(-1))) {
+                    currentExpression = currentExpression.slice(0, -1) + operator;
+                } else {
+                    currentExpression += ' ' + operator;
+                }
+            }
+            
+            updateDisplay();
+        }
+
+        // Evaluasi ekspresi matematika dengan urutan operasi
+        function evaluateExpression() {
+            // Parse expression untuk mendapatkan angka dan operator
+            const tokens = currentExpression.split(' ');
+            let numbers = [];
+            let operators = [];
+            
+            // Parse tokens
+            for (let token of tokens) {
+                if (['+', '-', '×', '÷'].includes(token)) {
+                    operators.push(token);
+                } else {
+                    numbers.push(parseFloat(token));
+                }
+            }
+            
+            // Handle kasus sederhana
+            if (numbers.length === 1) return numbers[0];
+            
+            // Lakukan perkalian dan pembagian terlebih dahulu
+            let i = 0;
+            while (i < operators.length) {
+                if (operators[i] === '×' || operators[i] === '÷') {
+                    const left = numbers[i];
+                    const right = numbers[i + 1];
+                    let result;
+                    
+                    if (operators[i] === '×') {
+                        result = left * right;
+                    } else {
+                        if (right === 0) return 'Error';
+                        result = left / right;
+                    }
+                    
+                    // Ganti angka dan operator yang sudah dihitung
+                    numbers.splice(i, 2, result);
+                    operators.splice(i, 1);
+                } else {
+                    i++;
+                }
+            }
+            
+            // Lakukan penjumlahan dan pengurangan
+            let result = numbers[0];
+            for (let i = 0; i < operators.length; i++) {
+                if (operators[i] === '+') {
+                    result += numbers[i + 1];
+                } else {
+                    result -= numbers[i + 1];
+                }
+            }
+            
+            return result;
+        }
+
+        // Reset calculator
+        function resetCalculator() {
+            displayValue = '0';
+            currentExpression = '';
+            firstOperand = null;
+            operator = null;
+            waitingForSecondOperand = false;
+            document.querySelectorAll('.operator').forEach(op => {
+                op.classList.remove('active');
+            });
+            updateDisplay();
+        }
+
+        // Clear entry
+        function clearEntry() {
+            displayValue = '0';
+            if (currentExpression) {
+                // Hapus angka terakhir dari ekspresi
+                const tokens = currentExpression.split(' ');
+                if (tokens.length > 0 && !['+', '-', '×', '÷'].includes(tokens[tokens.length - 1])) {
+                    tokens.pop();
+                    currentExpression = tokens.join(' ');
+                }
+            }
+            updateDisplay();
+        }
+
+        // Add to history
+        function addToHistory(calculation) {
+            calculationHistory.unshift(calculation);
+            if (calculationHistory.length > 5) {
+                calculationHistory.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            calculationHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = item;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Memory functions
+        function memoryClear() {
+            memory = 0;
+            showToast('Memory cleared');
+        }
+
+        function memoryRecall() {
+            displayValue = memory.toString();
+            if (currentExpression === '' || /[+\-×÷]/.test(currentExpression.slice(-1))) {
+                currentExpression += ' ' + displayValue;
+            } else {
+                currentExpression = displayValue;
+            }
+            updateDisplay();
+            showToast('Memory recalled');
+        }
+
+        function memoryAdd() {
+            memory += parseFloat(displayValue);
+            showToast('Added to memory');
+        }
+
+        function memorySubtract() {
+            memory -= parseFloat(displayValue);
+            showToast('Subtracted from memory');
+        }
+
+        // Toast notification
+        function showToast(message) {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.style.zIndex = '11';
+            
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header">
+                        <strong class="me-auto">Kalkulator</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto remove after 2 seconds
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', event => {
+            const { key } = event;
+            
+            if (key >= '0' && key <= '9') {
+                inputDigit(key);
+            } else if (key === '.') {
+                inputDecimal();
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                let operatorKey;
+                if (key === '+') operatorKey = '+';
+                else if (key === '-') operatorKey = '-';
+                else if (key === '*') operatorKey = '×';
+                else if (key === '/') operatorKey = '÷';
+                handleOperator(operatorKey);
+            } else if (key === 'Enter' || key === '=') {
+                if (currentExpression) {
+                    const result = evaluateExpression();
+                    if (result === 'Error') {
+                        displayValue = 'Error';
+                        addToHistory(`${currentExpression} = Error`);
+                    } else {
+                        const calculation = `${currentExpression} = ${result}`;
+                        addToHistory(calculation);
+                        displayValue = `${parseFloat(result.toFixed(7))}`;
+                        currentExpression = displayValue;
+                    }
+                    firstOperand = null;
+                    operator = null;
+                    waitingForSecondOperand = true;
+                    document.querySelectorAll('.operator').forEach(op => {
+                        op.classList.remove('active');
+                    });
+                    updateDisplay();
+                }
+            } else if (key === 'Escape' || key === 'Delete') {
+                resetCalculator();
+            } else if (key === 'Backspace') {
+                clearEntry();
+            }
+        });
+
+        // Button event listeners
+        document.getElementById('zero').addEventListener('click', () => inputDigit('0'));
+        document.getElementById('one').addEventListener('click', () => inputDigit('1'));
+        document.getElementById('two').addEventListener('click', () => inputDigit('2'));
+        document.getElementById('three').addEventListener('click', () => inputDigit('3'));
+        document.getElementById('four').addEventListener('click', () => inputDigit('4'));
+        document.getElementById('five').addEventListener('click', () => inputDigit('5'));
+        document.getElementById('six').addEventListener('click', () => inputDigit('6'));
+        document.getElementById('seven').addEventListener('click', () => inputDigit('7'));
+        document.getElementById('eight').addEventListener('click', () => inputDigit('8'));
+        document.getElementById('nine').addEventListener('click', () => inputDigit('9'));
+        
+        document.getElementById('decimal').addEventListener('click', inputDecimal);
+        
+        document.getElementById('add').addEventListener('click', () => handleOperator('+'));
+        document.getElementById('subtract').addEventListener('click', () => handleOperator('-'));
+        document.getElementById('multiply').addEventListener('click', () => handleOperator('×'));
+        document.getElementById('divide').addEventListener('click', () => handleOperator('÷'));
+        
+        document.getElementById('equals').addEventListener('click', () => {
+            if (currentExpression) {
+                const result = evaluateExpression();
+                if (result === 'Error') {
+                    displayValue = 'Error';
+                    addToHistory(`${currentExpression} = Error`);
+                } else {
+                    const calculation = `${currentExpression} = ${result}`;
+                    addToHistory(calculation);
+                    displayValue = `${parseFloat(result.toFixed(7))}`;
+                    currentExpression = displayValue;
+                }
+                firstOperand = null;
+                operator = null;
+                waitingForSecondOperand = true;
+                document.querySelectorAll('.operator').forEach(op => {
+                    op.classList.remove('active');
+                });
+                updateDisplay();
+            }
+        });
+        
+        document.getElementById('clear').addEventListener('click', resetCalculator);
+        document.getElementById('clear-entry').addEventListener('click', clearEntry);
+        
+        // Memory functions
+        document.getElementById('mc').addEventListener('click', memoryClear);
+        document.getElementById('mr').addEventListener('click', memoryRecall);
+        document.getElementById('m-plus').addEventListener('click', memoryAdd);
+        document.getElementById('m-minus').addEventListener('click', memorySubtract);
+        document.getElementById('m-clear').addEventListener('click', memoryClear);
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
